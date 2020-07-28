@@ -1,0 +1,35 @@
+# Docker
+# Build a Docker image 
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- feature/*
+
+stages:
+  - stage: Build
+    displayName: Build Image
+    jobs:
+      - job: Build
+        displayName: Build
+        pool: DevCenter_dev
+        steps:
+          - task: Docker@2
+            displayName: 'Equipment API'
+            inputs:
+              containerRegistry: 'publish-datateam-docker-dev-local'
+              command: 'login'
+          - task: Docker@2
+            displayName: 'Build and Push'
+            inputs:
+              containerRegistry: 'publish-datateam-docker-dev-local'
+              repository: 'Echo.Equipment.Api'
+              command: 'buildAndPush'
+              DockerFile: '**/Dockerfile'
+              tags: '$(Build.BuildId)-$(Build.SourceVersion)'
+          - task: Docker@2
+            displayName: 'Equipment API'
+            inputs:
+              containerRegistry: 'publish-datateam-docker-dev-local'
+              command: 'logout'
+          - publish: $(System.DefaultWorkingDirectory)
+            artifact: Echo.Equipment.Api
